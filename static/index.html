@@ -1,0 +1,19 @@
+<html>
+<head>
+    <title>Hello to prometheus-sample-app</title>
+    <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+<div>
+  <h1>Hello!</h1>
+  <p>Use /ping to test it!</p>
+  <p>Use /metrics to measure it!</p>
+  <p>Environment variable FEATURE_FLAG:</p>
+    <li>instable: will fail 40% of requests and response time above 2.5 seconds</li>
+    <li>broken: answer quick but it has an error rate of 90%</li>
+    <li>quick: answer quick with best response time with 10% of error rate</li>
+  <p>Without this feature flag it don't have errors, but is not soo fast</p>
+  <p>Environment variable DEBUG=true to print the random numbers</p>
+</div>
+</body>
+</html>
