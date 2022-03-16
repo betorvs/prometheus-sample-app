@@ -34,7 +34,7 @@ var totalRequests = prometheus.NewCounterVec(
 		Name: "http_requests_total",
 		Help: "Number of get requests.",
 	},
-	[]string{"path"},
+	[]string{"path", "status"},
 )
 
 var responseStatus = prometheus.NewCounterVec(
@@ -48,21 +48,21 @@ var responseStatus = prometheus.NewCounterVec(
 var httpDuration = promauto.NewHistogramVec(prometheus.HistogramOpts{
 	Name: "http_response_time_seconds",
 	Help: "Duration of HTTP requests.",
-}, []string{"path"})
+}, []string{"path", "status"})
 
 func prometheusMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		route := mux.CurrentRoute(r)
 		path, _ := route.GetPathTemplate()
-
-		timer := prometheus.NewTimer(httpDuration.WithLabelValues(path))
 		rw := newResponseWriter(w)
 		next.ServeHTTP(rw, r)
 
 		statusCode := rw.statusCode
 
+		timer := prometheus.NewTimer(httpDuration.WithLabelValues(path, fmt.Sprint(statusCode)))
+
 		responseStatus.WithLabelValues(strconv.Itoa(statusCode)).Inc()
-		totalRequests.WithLabelValues(path).Inc()
+		totalRequests.WithLabelValues(path, fmt.Sprint(statusCode)).Inc()
 
 		timer.ObserveDuration()
 	})
@@ -86,7 +86,6 @@ func ping(w http.ResponseWriter, req *http.Request) {
 	t := n
 	if n == 0 {
 		t = 1
-		log.Println("Random 0 issue")
 	}
 	if os.Getenv("DEBUG") == "true" {
 		log.Printf("Random number %v\n", n)
